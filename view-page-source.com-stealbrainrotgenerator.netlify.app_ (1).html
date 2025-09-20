@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sammy Brainrot Generator</title>
+<style>
+  :root{
+    --bg-top:#e6f7ff; --bg-bottom:#eafaf0;
+    --card:#fff; --accent:#ff7a3d; --muted:#6b7280;
+    --shadow:0 10px 30px rgba(2,6,23,0.08);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter, system-ui, Arial, Helvetica, sans-serif;
+    background:linear-gradient(180deg,var(--bg-top),var(--bg-bottom));
+    color:#000;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .container{max-width:1100px;margin:20px auto;padding:18px;display:grid;grid-template-columns:1fr 360px;gap:18px}
+  header{grid-column:1/3;text-align:center;margin-bottom:6px}
+  h1{color:var(--accent);margin:8px 0;font-size:32px}
+
+  .banner{background:#FF0000;color:#fff;padding:16px;border-radius:14px;box-shadow:var(--shadow);display:inline-block}
+  .banner .timer{font-weight:700;font-size:20px}
+
+  .card{background:var(--card);padding:16px;border-radius:14px;box-shadow:var(--shadow);transition:transform .18s}
+  .card:hover{transform:translateY(-3px)}
+
+  .field{width:100%;padding:10px;border-radius:10px;border:1px solid #FFF;font-size:15px}
+  .btn{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+  .btn.secondary{background:#fff;color:var(--accent);border:1px solid #f0f0f0}
+  .muted{color:var(--muted);font-size:13px}
+
+  /* pet card */
+  .pet-card{position:relative;border-radius:18px;padding:50px}
+  .pet-card img{width:130%;max-width:250px;height:200px;object-fit:cover;border-radius:0px;display:block;margin:0 auto 8px}
+  .badge{
+    position:absolute;right:12px;top:5px;
+    background:linear-gradient(135deg,#000,#FFFFFF);
+    color:#FFF;padding:6px 14px;border-radius:999px;
+    font-weight:900;letter-spacing:1px;text-transform:uppercase;
+    text-shadow:0 0 4px rgba(255,255,255,0.8);
+    box-shadow:0 0 6px #000,0 0 12px #fff;
+    animation:badgeGlow 1.8s ease-in-out infinite alternate;
+  }
+  @keyframes badgeGlow{
+    0%{box-shadow:0 0 6px #FFF,0 0 12px #FFF,0 0 18px rgba(10,1,1,1.1);transform:scale(1)}
+    100%{box-shadow:0 0 10px #000,0 0 20px #fff,0 0 28px rgba(11,11,1,1.5);transform:scale(1.05)}
+  }
+
+  .qty-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px}
+  .qty-btn{width:40px;height:40px;border-radius:10px;border:none;background:#f2f6ff;cursor:pointer;font-weight:700}
+
+  /* profile + live users column */
+  aside {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .live-users {
+    max-height: 50px;
+    overflow-y: auto;
+  }
+  .live-entry {
+    display:flex;
+    gap:10px;
+    align-items:center;
+    padding:7px;
+    border-radius:10px;
+    background:#fbfdff;
+    margin-bottom:7px;
+    cursor:pointer;
+    opacity:1;
+    transform:translateY(0);
+  }
+  @keyframes fadeInSlide{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  .live-entry.new{animation:fadeInSlide 0.5s ease forwards;}
+  .live-entry img{width:40px;height:40px;border-radius:999px;object-fit:cover}
+
+  /* modal */
+  .modal-back{position:fixed;inset:0;background:rgba(2,6,23,0.55);display:none;align-items:center;justify-content:center;z-index:999}
+  .modal{background:#fff;padding:18px;border-radius:14px;width:92%;max-width:520px;box-shadow:0 20px 50px rgba(2,6,23,0.5);text-align:center}
+  .spinner{width:64px;height:64px;border-radius:50%;border:6px solid rgba(0,0,0,0.08);border-top-color:var(--accent);animation:spin 1s linear infinite;margin:10px auto}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* responsive */
+  @media (max-width:980px){
+    .container{grid-template-columns:1fr; padding:12px}
+    aside{flex-direction:column}
+  }
+  /* profile card */
+#profileBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  min-height: 200px;
+  text-align: center;
+}
+
+#profileBox img {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 3px solid #ffae00;
+  box-shadow: 0 0 15px rgba(255,174,0,0.6);
+  object-fit: cover;
+  background: #f9f9f9;
+}
+
+#profileBox strong {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #222;
+}
+
+#profileBox .status {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #666;
+}
+
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Brainrot Generator</h1>
+    <div class="banner">
+      <div style="font-weight:700">  LIMITED TIME EVENT </div>
+      <div class="timer" id="timer">--:--:--</div>
+      <small class="muted">CLAIM YOURS NOW</small>
+    </div>
+  </header>
+
+  <!-- left column -->
+  <div class="card">
+    <h3>𝗖𝗼𝗻𝗻𝗲𝗰𝘁 𝗬𝗼𝘂𝗿 𝗥𝗼𝗯𝗹𝗼𝘅 𝗔𝗰𝗰𝗼𝘂𝗻𝘁</h3>
+    <input id="username" class="field" placeholder="Enter Roblox username - no needed password!" />
+    <div style="height:2px"></div>
+    <button class="btn" id="connectBtn">𝗖𝗼𝗻𝗻𝗲𝗰𝘁</button>
+    <div style="height:10px"></div>
+    <div id="connectHint" class="muted">Not connected</div>
+  </div>
+
+  <!-- right column -->
+  <aside>
+    <div class="card profile-center" id="profileBox">
+      <h3>🟢 : Roblox Profile</h3>
+      <div class="muted">🔴 : Not connected</div>
+    </div>
+    <div class="card">
+      <h3>Live Users 🔴</h3>
+      <div class="live-users" id="liveUsers"><div class="muted">No users yet ❌</div></div>
+    </div>
+  </aside>
+
+  <!-- pet cards -->
+  <div class="card" style="grid-column:1/2">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:18px;font-weight:800">𝐋𝐈𝐌𝐈𝐓𝐄𝐃 𝐓𝐈𝐌𝐄 𝐎𝐍𝐋𝐘 🔥</div>
+        <div class="muted">𝗚𝗔𝗥𝗔𝗥𝗔𝗠 𝗔𝗡𝗗 𝗠𝗔𝗗𝗨𝗡𝗗𝗨𝗡𝗚 - 𝟱𝟬𝗠</div>
+      </div>
+      <div class="muted" style="font-size:13px">Pick up to 2</div>
+    </div>
+    <div class="pet-card" style="margin-top:12px">
+      <div class="badge">Secret</div>
+      <img id="petImage1" src="https://cdn.discordapp.com/attachments/1390121098502471783/1418785631903027210/Picsart_25-09-20_10-27-25-209.png?ex=68cf6296&is=68ce1116&hm=13f48b5fccd129b9fabf4a6da704dcbd1bd7dddd3d0b23a4a09465b7bb06c56c&" alt="𝗚𝗮𝗿𝗮𝗿𝗮𝗺 𝗮𝗻𝗱 𝗠𝗮𝗱𝘂𝗻𝗱𝘂𝗻𝗴">
+      <h4 style="margin:6px 0">𝗚𝗔𝗥𝗔𝗥𝗔𝗠 𝗔𝗡𝗗 𝗠𝗔𝗗𝗨𝗡𝗗𝗨𝗡𝗚</h4>
+      <div class="muted">𝐓𝐎𝐓𝐀𝐋 𝐆𝐄𝐍𝐄𝐑𝐀𝐓𝐄𝐃 : 𝟓,𝟕𝟏𝟔</div>
+      <div class="qty-row">
+        <button class="qty-btn" onclick="setQty(1,-1)">−</button>
+        <div style="text-align:center">
+          <div class="muted" style="font-size:12px">Selected</div>
+          <div style="font-weight:800;font-size:18px" id="qtyDisplay1">1</div>
+          <div class="muted" style="font-size:12px">/ 2 max</div>
+        </div>
+        <button class="qty-btn" onclick="setQty(1,1)">+</button>
+      </div>
+      <div style="text-align:right;margin-top:12px">
+        <button class="btn" onclick="generatePet(1,'Dragon Canneloni')">Generate</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="grid-column:1/2">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:18px;font-weight:800">𝐋𝐈𝐌𝐈𝐓𝐄𝐃 𝐓𝐈𝐌𝐄 𝐎𝐍𝐋𝐘 🔥</div>
+        <div class="muted">𝗦𝗣𝗔𝗚𝗛𝗘𝗧𝗧𝗜 𝗧𝗢𝗜𝗟𝗟𝗘𝗧𝗜 - 60𝗠</div>
+      </div>
+      <div class="muted" style="font-size:13px">Pick up to 2</div>
+    </div>
+    <div class="pet-card" style="margin-top:12px">
+      <div class="badge">𝐒𝐄𝐂𝐑𝐄𝐓</div>
+      <img id="petImage2" src="https://cdn.discordapp.com/attachments/1390121098502471783/1418785909741981736/Picsart_25-09-20_10-28-30-413.png?ex=68cf62d8&is=68ce1158&hm=4ac14acc0ba65c40a43f4f76173df3304ef876d49e2243db2d35134bc3fbd2e0&">
+      <h4 style="margin:6px 0">𝗦𝗣𝗔𝗚𝗛𝗘𝗧𝗧𝗜 𝗧𝗢𝗜𝗟𝗟𝗘𝗧𝗜</h4>
+      <div class="muted">𝐓𝐎𝐓𝐀𝐋 𝐆𝐄𝐍𝐄𝐑𝐀𝐓𝐄𝐃 : 𝟐,𝟓𝟏𝟕</div>
+      <div class="qty-row">
+        <button class="qty-btn" onclick="setQty(2,-1)">−</button>
+        <div style="text-align:center">
+          <div class="muted" style="font-size:12px">Selected</div>
+          <div style="font-weight:800;font-size:18px" id="qtyDisplay2">1</div>
+          <div class="muted" style="font-size:12px">/ 2 max</div>
+        </div>
+        <button class="qty-btn" onclick="setQty(2,1)">+</button>
+      </div>
+      <div style="text-align:right;margin-top:12px">
+        <button class="btn" onclick="generatePet(2,'Phoenix Spaghetti')">Generate</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generate All -->
+  <div style="grid-column:1/2;text-align:center;margin-top:12px">
+    <button class="btn" onclick="generateAll()">✨ NEW! GENERATE ALL</button>
+  </div>
+</div>
+
+<!-- modals -->
+<div class="modal-back" id="loadingModal">
+  <div class="modal">
+    <div class="spinner"></div>
+    <div style="font-weight:700;margin-top:8px">Generating your pet...</div>
+  </div>
+</div>
+<div class="modal-back" id="resultModal">
+  <div class="modal">
+    <h3>Your Pets</h3>
+    <div id="resultBody" style="margin:12px 0"></div>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:8px">
+      <button class="btn" id="visitProfileBtn">VISIT MY ROBLOX PROFILE</button>
+      <button class="btn secondary" onclick="closeAllModals()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CORS_PROXY="https://corsproxy.io/?";
+const FALLBACK_AVATAR="https://upload.wikimedia.org/wikipedia/commons/6/6e/Roblox_Avatar.png";
+const ROBLOX_PROFILE_BASE ="https://www.roblox.com.sn/users/8089534964/profile";
+
+let connected=null;
+let qtys={1:1,2:1};
+
+function setQty(card,delta){
+  qtys[card]=Math.min(2,Math.max(1,qtys[card]+delta));
+  document.getElementById("qtyDisplay"+card).textContent=qtys[card];
+}
+
+function showProfile(username,avatarUrl,userId){
+  profileBox.innerHTML=`
+    <h3>Roblox Profile</h3>
+    <img src="${avatarUrl}" alt="Avatar" onerror="this.onerror=null;this.src='${FALLBACK_AVATAR}'">
+    <div style="font-weight:700;margin-top:6px">@${username}</div>
+  `;
+  connectHint.textContent="Connected as @"+username;
+}
+
+function addLiveUser(name,avatar,qty,userId,petName){
+  if(liveUsers.querySelector(".muted")) liveUsers.innerHTML="";
+  const div=document.createElement("div");
+  div.className="live-entry new";
+  div.innerHTML=`<img src="${avatar||FALLBACK_AVATAR}" onerror="this.onerror=null;this.src='${FALLBACK_AVATAR}'"><div><strong>@${name}</strong> claimed <strong>${qty}x</strong> ${petName}</div>`;
+  div.onclick=()=>window.open(`${ROBLOX_PROFILE_BASE}/${userId||""}/profile`,"_blank");
+  liveUsers.prepend(div);
+  setTimeout(()=>div.classList.remove("new"),600);
+  while(liveUsers.children.length>14) liveUsers.removeChild(liveUsers.lastChild);
+}
+
+function generatePet(card,petName){
+  if(!connected){alert("Please connect your Roblox username first");return;}
+  loadingModal.style.display="flex";
+  setTimeout(()=>{
+    loadingModal.style.display="none";
+    resultBody.innerHTML=`
+      <div style="display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap">
+        <img src="${document.getElementById("petImage"+card).src}" style="width:90px;height:90px;border-radius:10px;object-fit:cover">
+        <div style="text-align:left">
+          <div style="font-weight:800">${petName} (LIMITED)</div>
+          <div class="muted">${qtys[card]}x claimed by @${connected.username}</div>
+        </div>
+      </div>
+    `;
+    visitProfileBtn.onclick=()=>window.open(`${ROBLOX_PROFILE_BASE}/${connected.userId}/profile`,"_blank");
+    resultModal.style.display="flex";
+    addLiveUser(connected.username,connected.avatar,qtys[card],connected.userId,petName);
+  },2000);
+}
+
+function generateAll(){
+  generatePet(1,"Dragon Canneloni");
+  setTimeout(()=>generatePet(2,"Phoenix Spaghetti"),2200);
+}
+
+function closeAllModals(){loadingModal.style.display="none";resultModal.style.display="none";}
+
+document.getElementById("connectBtn").addEventListener("click",async()=>{
+  const username=document.getElementById("username").value.trim();
+  if(!username){alert("Type your Roblox username first");return;}
+  connectHint.textContent="Connecting...";
+  const info=await fetchRobloxAvatar(username);
+  if(info&&info.avatarUrl){
+    connected={username,userId:info.userId,avatar:info.avatarUrl};
+    showProfile(username,info.avatarUrl,info.userId);
+  }else{
+    connected={username,userId:null,avatar:FALLBACK_AVATAR};
+    showProfile(username,FALLBACK_AVATAR,null);
+  }
+});
+
+async function fetchRobloxAvatar(username){
+  try{
+    const lookupUrl="https://users.roblox.com/v1/usernames/users";
+    const r1=await fetch(CORS_PROXY+encodeURIComponent(lookupUrl),{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({usernames:[username]})
+    });
+    let parsed1=await r1.json();
+    if(!parsed1.data||!parsed1.data.length) throw new Error("User not found");
+    const userId=parsed1.data[0].id;
+    const thumbUrl=`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=true`;
+    const r2=await fetch(CORS_PROXY+encodeURIComponent(thumbUrl));
+    let parsed2=await r2.json();
+    return {userId,avatarUrl:parsed2.data[0].imageUrl};
+  }catch(e){return null;}
+}
+
+const FAKE_USERS=[
+  {name:"CoolGamer123",id:1},{name:"xXShadowXx_99",id:2},{name:"LuffyFan_07",id:3},
+  {name:"NinjaPro2000",id:4},{name:"RobloxKing88",id:5}
+];
+async function fetchAvatarForUser(user){
+  try{
+    const url=`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${user.id}&size=48x48&format=Png&isCircular=true`;
+    const r=await fetch(CORS_PROXY+encodeURIComponent(url));
+    const parsed=await r.json();
+    user.avatar=(parsed.data&&parsed.data[0].imageUrl)||FALLBACK_AVATAR;
+  }catch(e){user.avatar=FALLBACK_AVATAR;}
+}
+async function preloadFakeAvatars(){for(const u of FAKE_USERS){await fetchAvatarForUser(u);}}
+preloadFakeAvatars();
+setInterval(()=>{
+  const pick=FAKE_USERS[Math.floor(Math.random()*FAKE_USERS.length)];
+  const count=Math.floor(Math.random()*2)+1;
+  const petNames=["Gararam and Madundung","Spaghetti Toilleti"];
+  addLiveUser(pick.name,pick.avatar,count,pick.id,petNames[Math.floor(Math.random()*petNames.length)]);
+},4500);
+
+function startTimer(sec){const el=document.getElementById("timer");const iv=setInterval(()=>{if(sec<=0){el.textContent="00:00:00";clearInterval(iv);return;}const h=String(Math.floor(sec/3600)).padStart(2,"0");const m=String(Math.floor((sec%3600)/60)).padStart(2,"0");const s=String(sec%60).padStart(2,"0");el.textContent=`${h}:${m}:${s}`;sec--;},1000);}
+startTimer(3600);
+</script>
+</body>
+</html>
